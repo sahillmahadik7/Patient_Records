@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="card narrow">
+    <div class="auth-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+    </div>
+    <h1>{{ title }}</h1>
+    <p class="muted">Sign in to continue to your account.</p>
+    <form method="post">
+        {{ form.hidden_tag() }}
+        {{ field(form.email, autocomplete="username", placeholder="you@example.com") }}
+        {{ field(form.password, autocomplete="current-password", placeholder="Your password") }}
+        {{ form.submit(class_="btn") }}
+    </form>
+    {% if doctor %}
+        <p class="muted">Need access? <a href="{{ url_for('doctor_register') }}">Submit a doctor access request</a>.</p>
+    {% else %}
+        <p class="muted">New patient? <a href="{{ url_for('register') }}">Create an account</a>.</p>
+    {% endif %}
+</div>
+{% endblock %}

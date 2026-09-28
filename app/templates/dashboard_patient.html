@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Patient Dashboard{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Patient Dashboard</h1>
+        <p class="page-subtitle">Your Patient ID and the medical reports shared with you.</p>
+    </div>
+</div>
+
+<div class="card id-card">
+    <div>
+        <strong>Your Patient ID</strong>
+        <p class="patient-id">{{ current_user.patient_code }}</p>
+    </div>
+    <p class="muted">Give this ID to your doctor so they can add you to their patient list.</p>
+</div>
+
+<section class="section-block">
+    <h2>My Medical Reports</h2>
+    {% if records %}
+    <div class="table-wrap">
+        <table>
+            <tr><th>Doctor</th><th>Report</th><th>Uploaded</th><th></th></tr>
+            {% for rec in records %}
+            <tr>
+                <td>{{ rec.doctor.name }}</td>
+                <td>{{ rec.orig_filename }}</td>
+                <td>{{ rec.uploaded_at.strftime("%Y-%m-%d %H:%M") }}</td>
+                <td><a class="btn small" href="{{ url_for('download', record_id=rec.id) }}">Download</a></td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    {% else %}<div class="empty-note">No medical reports are available yet.</div>{% endif %}
+</section>
+{% endblock %}

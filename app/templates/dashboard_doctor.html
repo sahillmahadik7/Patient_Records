@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Doctor Dashboard{% endblock %}
+
+{% block content %}
+
+<div class="doctor-home">
+
+    <h1>Doctor Dashboard</h1>
+
+    <p class="subtitle">
+        Manage your patients and medical records.
+    </p>
+
+
+    <div class="doctor-home-grid">
+
+        <!-- PATIENTS -->
+        <div class="doctor-home-card">
+
+            <h2>My Patients</h2>
+
+            <p>
+                View and manage the patients currently assigned to you.
+            </p>
+
+            <div class="doctor-stat">
+                {{ patients|length }}
+            </div>
+
+            <a href="{{ url_for('doctor_patients') }}" class="doctor-home-button">
+                View Patients
+            </a>
+
+        </div>
+
+
+        <!-- RECORDS -->
+        <div class="doctor-home-card">
+
+            <h2>My Records</h2>
+
+            <p>
+                View medical reports and health records created or uploaded
+                for your patients.
+            </p>
+
+            <div class="doctor-stat">
+                {{ records|length }}
+            </div>
+
+            <a href="{{ url_for('doctor_records') }}" class="doctor-home-button">
+                View Records
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <div class="quick-actions">
+
+        <h2>Quick Actions</h2>
+
+        <div class="quick-action-card">
+
+            <a href="{{ url_for('add_patient_page') }}" class="doctor-home-button">
+                + Add Patient
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

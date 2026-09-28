@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Add Patient{% endblock %}
+
+{% block content %}
+
+<div class="narrow-page">
+
+    <h1>Add Patient</h1>
+
+    <p class="page-description">
+        Add an approved patient to your patient list using their unique Patient ID.
+    </p>
+
+
+    <section class="card">
+
+        <h2>Add a Patient</h2>
+
+        <p class="help">
+            Enter the Patient ID provided by the patient.
+        </p>
+
+        <form method="post" action="{{ url_for('add_patient') }}">
+
+            {{ form.hidden_tag() }}
+
+            <div class="patient-form-row">
+
+                <div class="patient-form-field">
+
+                    {{ form.patient_code.label }}
+
+                    {{ form.patient_code(
+                    placeholder="PAT-XXXXXXXXXX",
+                    autocomplete="off"
+                    ) }}
+
+                    {% for error in form.patient_code.errors %}
+                    <div class="field-error">{{ error }}</div>
+                    {% endfor %}
+
+                </div>
+
+                {{ form.submit(
+                class_="add-button",
+                value="Add Patient"
+                ) }}
+
+            </div>
+
+        </form>
+
+    </section>
+
+
+    <section class="section-block">
+
+        <h2>My Patients</h2>
+
+        {% if patients %}
+
+        <div class="patient-list">
+
+            {% for patient in patients %}
+
+            <div class="patient-row">
+
+                <div class="mini-avatar" aria-hidden="true">
+                    {{ patient.name[:1]|upper }}
+                </div>
+
+                <strong>
+                    {{ patient.name }}
+                </strong>
+
+                <span class="row-email">
+                    {{ patient.email }}
+                </span>
+
+                <span class="code">
+                    {{ patient.patient_code }}
+                </span>
+
+                <a href="{{ url_for('doctor_patient', patient_id=patient.id) }}" class="view-button">
+                    View
+                </a>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+        {% else %}
+
+        <div class="patient-list">
+            <div class="empty-patients">
+                No patients have been added yet.
+            </div>
+        </div>
+
+        {% endif %}
+
+    </section>
+
+</div>
+
+{% endblock %}

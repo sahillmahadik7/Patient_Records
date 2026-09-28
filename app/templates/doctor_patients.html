@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}My Patients{% endblock %}
+
+{% block content %}
+
+<div class="narrow-page">
+
+    <div class="page-header">
+        <div>
+            <h1>My Patients</h1>
+            <p class="page-subtitle">
+                View and manage the patients assigned to you.
+            </p>
+        </div>
+
+        <a href="{{ url_for('add_patient_page') }}" class="btn">
+            + Add Patient
+        </a>
+    </div>
+
+
+    {% if patients %}
+
+    <section class="card">
+
+        <div class="section-header">
+            <div>
+                <h2>Patient List</h2>
+                <p>
+                    Patients currently assigned to your account.
+                </p>
+            </div>
+
+            <span class="record-count">
+                {{ patients|length }}
+            </span>
+        </div>
+
+
+        <div class="record-list">
+
+            {% for patient in patients %}
+
+            <div class="list-row">
+
+                <div class="list-row-info">
+
+                    <h3>
+                        {{ patient.name }}
+                    </h3>
+
+                    <p>
+                        {{ patient.email }}
+                        ·
+                        Patient ID: {{ patient.patient_code }}
+                    </p>
+
+                </div>
+
+                <a href="{{ url_for(
+                        'doctor_patient',
+                        patient_id=patient.id
+                    ) }}" class="btn small">
+                    View Patient
+                </a>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+    {% else %}
+
+    <section class="card">
+
+        <div class="empty-note">
+
+            <h3>No patients yet</h3>
+
+            <p>
+                You haven't added any patients to your list.
+            </p>
+
+            <a href="{{ url_for('add_patient_page') }}" class="btn">
+                + Add Patient
+            </a>
+
+        </div>
+
+    </section>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

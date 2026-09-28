@@ -1,0 +1,11 @@
+{# UI-only helper: label + input + validation messages for a WTForms field #}
+{% macro field(f) %}
+{% set cls = kwargs.pop('class_', 'form-control') %}
+<div class="form-group{% if f.errors %} has-error{% endif %}">
+    {{ f.label }}
+    {{ f(class_=cls, **kwargs) }}
+    {% for error in f.errors %}
+    <div class="field-error">{{ error }}</div>
+    {% endfor %}
+</div>
+{% endmacro %}

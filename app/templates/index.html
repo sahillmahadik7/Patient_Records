@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Patient Health Records{% endblock %}
+{% block content %}
+<div class="hero">
+    <span class="hero-eyebrow">Secure &amp; role-based</span>
+    <h1>Patient Health Records Portal</h1>
+    <p>Secure role-based access for patients, doctors, and administrators.</p>
+    <div class="actions">
+        <a class="btn large" href="{{ url_for('patient_login') }}">Patient Login</a>
+        <a class="btn large secondary" href="{{ url_for('doctor_login') }}">Doctor Login</a>
+    </div>
+    <p class="muted">New doctor? <a href="{{ url_for('doctor_register') }}">Request doctor access</a>. Your account requires administrator approval.</p>
+</div>
+
+<div class="feature-grid">
+    <div class="feature-card">
+        <div class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <h3>Patients</h3>
+        <p>View and download your medical reports, and share your Patient ID with your doctor.</p>
+    </div>
+    <div class="feature-card">
+        <div class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M12 18v-6M9 15h6"/></svg>
+        </div>
+        <h3>Doctors</h3>
+        <p>Manage your patients, upload reports and write health records in one place.</p>
+    </div>
+    <div class="feature-card">
+        <div class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+        </div>
+        <h3>Administrators</h3>
+        <p>Verify and approve doctor access requests before anyone can sign in.</p>
+    </div>
+</div>
+{% endblock %}

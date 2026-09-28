@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Administrator Dashboard{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Administrator Dashboard</h1>
+        <p class="page-subtitle">Review doctor access requests and recent registrations.</p>
+    </div>
+</div>
+
+<section class="section-block first">
+    <h2>Pending Doctor Requests</h2>
+    {% if pending %}
+    <div class="table-wrap">
+        <table>
+            <tr><th>Name</th><th>Email</th><th>License</th><th>Requested</th><th>Action</th></tr>
+            {% for doctor in pending %}
+            <tr>
+                <td>{{ doctor.name }}</td>
+                <td>{{ doctor.email }}</td>
+                <td>{{ doctor.doctor_license }}</td>
+                <td>{{ doctor.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
+                <td class="actions">
+                    <form method="post" action="{{ url_for('review_doctor', user_id=doctor.id, action='approve') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button class="btn small" type="submit">Approve</button>
+                    </form>
+                    <form method="post" action="{{ url_for('review_doctor', user_id=doctor.id, action='reject') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button class="btn danger small" type="submit">Reject</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    {% else %}<div class="empty-note">No pending doctor requests.</div>{% endif %}
+</section>
+
+<section class="section-block">
+    <h2>Recent Portal Registrations</h2>
+    <div class="table-wrap">
+        <table>
+            <tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Created</th></tr>
+            {% for user in recent %}
+            <tr>
+                <td>{{ user.name }}</td>
+                <td>{{ user.email }}</td>
+                <td><span class="badge role">{{ user.role }}</span></td>
+                <td><span class="badge {{ user.status }}">{{ user.status }}</span></td>
+                <td>{{ user.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</section>
+{% endblock %}

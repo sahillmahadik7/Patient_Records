@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field %}
+{% block title %}Doctor Access Request{% endblock %}
+{% block content %}
+<div class="card narrow">
+    <div class="auth-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M12 8v6M9 11h6"/></svg>
+    </div>
+    <h1>Doctor Access Request</h1>
+    <p class="muted">Doctor accounts remain pending until an administrator verifies and approves the registration.</p>
+    <form method="post">
+        {{ form.hidden_tag() }}
+        {{ field(form.name, placeholder="Your full name") }}
+        {{ field(form.email, placeholder="name@hospital.org") }}
+        {{ field(form.doctor_license, placeholder="Registration ID") }}
+        {{ field(form.password, autocomplete="new-password", placeholder="At least 8 characters") }}
+        {{ form.submit(class_="btn") }}
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}My Records{% endblock %}
+
+{% block content %}
+
+<div class="narrow-page">
+
+    <h1>My Records</h1>
+
+    <p class="subtitle">
+        Medical records and reports associated with your patients.
+    </p>
+
+
+    <!-- UPLOADED FILES -->
+
+    <section class="section-block">
+
+        <h2>Uploaded Reports</h2>
+
+        {% if records %}
+
+        <div class="records-list">
+
+            {% for record in records %}
+
+            <div class="list-row">
+
+                <div class="list-row-info">
+
+                    <h3>
+                        {{ record.orig_filename }}
+                    </h3>
+
+                    <p>
+                        Patient: {{ record.patient.name }}
+                        ·
+                        {{ record.uploaded_at.strftime("%d %b %Y, %H:%M") }}
+                    </p>
+
+                </div>
+
+                <a href="{{ url_for('download', record_id=record.id) }}" class="view-record">
+                    Download
+                </a>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+        {% else %}
+
+        <div class="records-list">
+            <div class="empty-records">
+                No uploaded reports yet.
+            </div>
+        </div>
+
+        {% endif %}
+
+    </section>
+
+
+    <!-- WRITTEN REPORTS -->
+
+    <section class="section-block">
+
+        <h2>Health Records</h2>
+
+        {% if written_reports %}
+
+        <div class="records-list">
+
+            {% for report in written_reports %}
+
+            <div class="list-row">
+
+                <div class="list-row-info">
+
+                    <h3>
+                        {{ report.title }}
+                    </h3>
+
+                    <p>
+                        Patient: {{ report.patient.name }}
+                        ·
+                        {{ report.created_at.strftime("%d %b %Y, %H:%M") }}
+                    </p>
+
+                </div>
+
+                <a href="{{ url_for('doctor_patient', patient_id=report.patient_id) }}" class="view-record">
+                    View
+                </a>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+        {% else %}
+
+        <div class="records-list">
+            <div class="empty-records">
+                No health records created yet.
+            </div>
+        </div>
+
+        {% endif %}
+
+    </section>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,377 @@
+{% extends "base.html" %}
+
+{% block title %}Patient Records{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h1>Patient Records</h1>
+        <p class="page-subtitle">
+            Manage medical records and reports for this patient.
+        </p>
+    </div>
+
+    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+        ← Back to Dashboard
+    </a>
+</div>
+
+
+<!-- PATIENT PROFILE -->
+<section class="patient-profile card">
+
+    <div class="patient-avatar">
+        {{ patient.name[0]|upper }}
+    </div>
+
+    <div class="patient-info">
+        <h2>{{ patient.name }}</h2>
+
+        <p>{{ patient.email }}</p>
+
+        <div class="patient-meta">
+
+            <span>
+                <strong>Patient ID</strong>
+                {{ patient.patient_code }}
+            </span>
+
+            <span>
+                <strong>Status</strong>
+                <span class="status-badge">Active</span>
+            </span>
+
+        </div>
+    </div>
+
+</section>
+
+
+<!-- TWO COLUMN ACTION AREA -->
+<div class="record-grid">
+
+
+    <!-- UPLOAD DOCUMENT -->
+    <section class="card">
+
+        <div class="card-header">
+            <div>
+                <h2>Upload Medical Report</h2>
+                <p>
+                    Upload an existing medical document for this patient.
+                </p>
+            </div>
+
+            <div class="card-icon">
+                ↑
+            </div>
+        </div>
+
+        <div class="upload-info">
+            <span>PDF</span>
+            <span>PNG</span>
+            <span>JPG</span>
+            <span>DOCX</span>
+            <span>TXT</span>
+        </div>
+
+        <p class="form-help">
+            Maximum file size: 10 MB.
+        </p>
+
+        <form
+            method="post"
+            enctype="multipart/form-data"
+            action="{{ url_for('upload', patient_id=patient.id) }}"
+        >
+
+            <input
+                type="hidden"
+                name="csrf_token"
+                value="{{ csrf_token() }}"
+            >
+
+            <div class="file-input-wrapper">
+                {{ form.file.label }}
+
+                {{ form.file(
+                    class_="file-input"
+                ) }}
+
+                {% for error in form.file.errors %}
+                <div class="field-error">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            {{ form.submit(
+                class_="btn btn-primary btn-full"
+            ) }}
+
+        </form>
+
+    </section>
+
+
+    <!-- CREATE WRITTEN REPORT -->
+    <section class="card">
+
+        <div class="card-header">
+
+            <div>
+                <h2>Create Health Record</h2>
+                <p>
+                    Create a new medical record for this patient.
+                </p>
+            </div>
+
+            <div class="card-icon">
+                +
+            </div>
+
+        </div>
+
+
+        <form
+            method="post"
+            action="{{ url_for(
+                'create_written_report',
+                patient_id=patient.id
+            ) }}"
+        >
+
+            {{ report_form.hidden_tag() }}
+
+
+            <div class="form-group">
+
+                {{ report_form.title.label }}
+
+                {{ report_form.title(
+                    class_="form-control",
+                    placeholder="Report title"
+                ) }}
+
+                {% for error in report_form.title.errors %}
+                <div class="field-error">{{ error }}</div>
+                {% endfor %}
+
+            </div>
+
+
+            <div class="form-group">
+
+                {{ report_form.diagnosis.label }}
+
+                {{ report_form.diagnosis(
+                    class_="form-control textarea-large",
+                    rows="5",
+                    placeholder="Enter diagnosis..."
+                ) }}
+
+                {% for error in report_form.diagnosis.errors %}
+                <div class="field-error">{{ error }}</div>
+                {% endfor %}
+
+            </div>
+
+
+            <div class="form-group">
+
+                {{ report_form.notes.label }}
+
+                {{ report_form.notes(
+                    class_="form-control textarea-large",
+                    rows="5",
+                    placeholder="Enter additional notes..."
+                ) }}
+
+                {% for error in report_form.notes.errors %}
+                <div class="field-error">{{ error }}</div>
+                {% endfor %}
+
+            </div>
+
+
+            {{ report_form.submit(
+                class_="btn btn-primary"
+            ) }}
+
+        </form>
+
+    </section>
+
+</div>
+
+
+<!-- UPLOADED DOCUMENTS -->
+<section class="card records-section">
+
+    <div class="section-header">
+
+        <div>
+            <h2>Uploaded Documents</h2>
+            <p>
+                Medical files uploaded for this patient.
+            </p>
+        </div>
+
+        <span class="record-count">
+            {{ records|length }}
+        </span>
+
+    </div>
+
+
+    {% if records %}
+
+    <div class="record-list">
+
+        {% for rec in records %}
+
+        <div class="record-item">
+
+            <div class="record-file-icon">
+                FILE
+            </div>
+
+            <div class="record-details">
+
+                <strong>
+                    {{ rec.orig_filename }}
+                </strong>
+
+                <span>
+                    Uploaded
+                    {{ rec.uploaded_at.strftime("%d %b %Y, %I:%M %p") }}
+                </span>
+
+            </div>
+
+            <a
+                href="{{ url_for(
+                    'download',
+                    record_id=rec.id
+                ) }}"
+                class="btn btn-small"
+            >
+                Download
+            </a>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    {% else %}
+
+    <div class="empty-state">
+
+        <div class="empty-icon">
+            FILE
+        </div>
+
+        <h3>No uploaded documents</h3>
+
+        <p>
+            No medical documents have been uploaded for this patient yet.
+        </p>
+
+    </div>
+
+    {% endif %}
+
+</section>
+
+
+<!-- WRITTEN REPORTS -->
+<section class="card records-section">
+
+    <div class="section-header">
+
+        <div>
+            <h2>My Records</h2>
+            <p>
+                Medical records created by you for this patient.
+            </p>
+        </div>
+
+        <span class="record-count">
+            {{ written_reports|length }}
+        </span>
+
+    </div>
+
+
+    {% if written_reports %}
+
+    <div class="written-report-list">
+
+        {% for report in written_reports %}
+
+        <article class="written-report-card">
+
+            <div class="written-report-header">
+
+                <div>
+
+                    <h3>
+                        {{ report.title }}
+                    </h3>
+
+                    <span>
+                        {{ report.created_at.strftime(
+                            "%d %b %Y, %I:%M %p"
+                        ) }}
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <div class="report-field">
+
+                <h4>Diagnosis</h4>
+
+                <p>{{ report.diagnosis }}</p>
+
+            </div>
+
+
+            <div class="report-field">
+
+                <h4>Notes</h4>
+
+                <p>{{ report.notes }}</p>
+
+            </div>
+
+        </article>
+
+        {% endfor %}
+
+    </div>
+
+    {% else %}
+
+    <div class="empty-state">
+
+        <div class="empty-icon">
+            +
+        </div>
+
+        <h3>No health records yet</h3>
+
+        <p>
+            Create a health record using the form above.
+        </p>
+
+    </div>
+
+    {% endif %}
+
+</section>
+
+{% endblock %}
