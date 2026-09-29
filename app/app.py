@@ -375,9 +375,16 @@ def dashboard():
         Record.uploaded_at.desc()
     ).all()
 
+    written_reports = WrittenReport.query.filter_by(
+        patient_id=current_user.id
+    ).order_by(
+        WrittenReport.created_at.desc()
+    ).all()
+
     return render_template(
         "dashboard_patient.html",
-        records=records
+        records=records,
+        written_reports=written_reports
     )
 
 
