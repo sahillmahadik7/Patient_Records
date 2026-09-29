@@ -21,7 +21,12 @@
     {% if records %}
     <div class="table-wrap">
         <table>
-            <tr><th>Doctor</th><th>Report</th><th>Uploaded</th><th></th></tr>
+            <tr>
+                <th>Doctor</th>
+                <th>Report</th>
+                <th>Uploaded</th>
+                <th></th>
+            </tr>
             {% for rec in records %}
             <tr>
                 <td>{{ rec.doctor.name }}</td>
@@ -33,5 +38,39 @@
         </table>
     </div>
     {% else %}<div class="empty-note">No medical reports are available yet.</div>{% endif %}
+</section>
+
+<section class="section-block">
+    <h2>Health Records</h2>
+
+    {% if written_reports %}
+    <div class="records-list">
+        {% for report in written_reports %}
+        <div class="list-row">
+            <div class="list-row-info">
+                <h3>{{ report.title }}</h3>
+
+                <p>
+                    <strong>Diagnosis:</strong>
+                    {{ report.diagnosis }}
+                </p>
+
+                <p>
+                    <strong>Notes:</strong>
+                    {{ report.notes }}
+                </p>
+
+                <p>
+                    {{ report.created_at.strftime("%d %b %Y, %H:%M") }}
+                </p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-records">
+        No health records yet.
+    </div>
+    {% endif %}
 </section>
 {% endblock %}
