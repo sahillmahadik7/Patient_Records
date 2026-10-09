@@ -46,6 +46,35 @@ limiter = Limiter(
     storage_uri=app.config["RATELIMIT_STORAGE_URI"],
 )
 
+# ── Vulnerable / Secure mode toggle ──────────────────────────────────
+# When True every security control is intentionally disabled so that
+# all 12 attack categories can be demonstrated live.
+VULNERABLE_MODE = False
+
+
+@limiter.request_filter
+def _exempt_when_vulnerable():
+    """Bypass rate limits entirely in vulnerable mode."""
+    return VULNERABLE_MODE
+
+
+@app.before_request
+def _csrf_mode():
+    """Disable CSRF validation in vulnerable mode."""
+    app.config["WTF_CSRF_ENABLED"] = not VULNERABLE_MODE
+
+
+@app.context_processor
+def _inject_mode():
+    return {"vulnerable_mode": VULNERABLE_MODE}
+
+
+@app.template_filter("vuln_safe")
+def _vuln_safe(value):
+    """In vulnerable mode return raw Markup (XSS possible); otherwise escape."""
+    from markupsafe import Markup, escape
+    return Markup(value) if VULNERABLE_MODE else escape(value)
+
 S3_BUCKET = app.config["S3_BUCKET"]
 s3 = boto3.client(
     "s3", region_name=app.config["AWS_REGION"]) if S3_BUCKET else None
@@ -77,6 +106,9 @@ def role_required(*roles):
         @wraps(view)
         @login_required
         def wrapped(*args, **kwargs):
+            # VULNERABLE MODE: skip role check entirely
+            if VULNERABLE_MODE:
+                return view(*args, **kwargs)
             if not current_user.is_active or current_user.role not in roles:
                 abort(403)
             return view(*args, **kwargs)
@@ -88,6 +120,9 @@ def doctor_patient_required(view):
     @wraps(view)
     @login_required
     def wrapped(patient_id, *args, **kwargs):
+        # VULNERABLE MODE: skip doctor-patient assignment check (horizontal escalation)
+        if VULNERABLE_MODE:
+            return view(patient_id, *args, **kwargs)
         if current_user.role != "doctor" or not current_user.is_active:
             abort(403)
         assignment = PatientAssignment.query.filter_by(
@@ -100,6 +135,9 @@ def doctor_patient_required(view):
 
 
 def allowed_extension(filename):
+    # VULNERABLE MODE: accept any file extension
+    if VULNERABLE_MODE:
+        return bool(filename)
     return (
         bool(filename)
         and "." in filename
@@ -109,6 +147,9 @@ def allowed_extension(filename):
 
 def validate_file_content(file_storage, extension):
     """Check the actual file bytes, not only the filename extension."""
+    # VULNERABLE MODE: skip magic-byte check entirely
+    if VULNERABLE_MODE:
+        return True
     file_storage.stream.seek(0)
     head = file_storage.stream.read(16)
     file_storage.stream.seek(0)
@@ -200,6 +241,9 @@ def doctor_can_access_patient(patient_id):
 
 @app.after_request
 def security_headers(response):
+    # VULNERABLE MODE: strip all security headers
+    if VULNERABLE_MODE:
+        return response
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
@@ -307,6 +351,12 @@ def doctor_login():
         email = form.email.data.strip().lower()
         user = User.query.filter_by(email=email, role="doctor").first()
         if not user:
+            flash("Invalid doctor credentials.", "danger")
+        elif VULNERABLE_MODE:
+            # VULNERABLE MODE: skip approval check — pending/rejected doctors can log in
+            if check_password_hash(user.password, form.password.data):
+                login_user(user, remember=False, force=True)
+                return redirect(url_for("dashboard"))
             flash("Invalid doctor credentials.", "danger")
         elif user.status == "pending":
             flash("Your doctor account is awaiting administrator approval.", "warning")
@@ -577,7 +627,9 @@ def upload(patient_id):
     patient = User.query.filter_by(
         id=patient_id, role="patient", status="approved").first_or_404()
     file = form.file.data
-    original = secure_filename(file.filename or "")
+    original = file.filename or ""
+    if not VULNERABLE_MODE:
+        original = secure_filename(original)
 
     if not original or not allowed_extension(original):
         flash("File type not allowed.", "danger")
@@ -596,7 +648,20 @@ def upload(patient_id):
         return redirect(url_for("doctor_patient", patient_id=patient_id))
 
     key = storage_key(original)
-    content_type = file.mimetype or "application/octet-stream"
+    # VULNERABLE MODE: use client-supplied MIME (MIME-type poisoning possible)
+    # SECURE MODE: derive from validated extension — never trust client value
+    if VULNERABLE_MODE:
+        content_type = file.mimetype or "application/octet-stream"
+    else:
+        SAFE_MIME = {
+            "pdf":  "application/pdf",
+            "png":  "image/png",
+            "jpg":  "image/jpeg",
+            "jpeg": "image/jpeg",
+            "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "txt":  "text/plain; charset=utf-8",
+        }
+        content_type = SAFE_MIME.get(ext, "application/octet-stream")
 
     try:
         save_report(file, key, content_type)
@@ -628,16 +693,18 @@ def download(record_id):
     if not record:
         abort(404)
 
-    if current_user.role == "admin":
-        pass
-    elif current_user.role == "patient":
-        if record.patient_id != current_user.id:
+    # VULNERABLE MODE: skip ownership check entirely (IDOR)
+    if not VULNERABLE_MODE:
+        if current_user.role == "admin":
+            pass
+        elif current_user.role == "patient":
+            if record.patient_id != current_user.id:
+                abort(403)
+        elif current_user.role == "doctor":
+            if record.doctor_id != current_user.id or not doctor_can_access_patient(record.patient_id):
+                abort(403)
+        else:
             abort(403)
-    elif current_user.role == "doctor":
-        if record.doctor_id != current_user.id or not doctor_can_access_patient(record.patient_id):
-            abort(403)
-    else:
-        abort(403)
 
     return send_report(record)
 
@@ -665,6 +732,19 @@ def review_doctor(user_id, action):
         f"Doctor account {action}d successfully.",
         "success" if action == "approve" else "warning",
     )
+    return redirect(url_for("admin_dashboard"))
+
+
+@app.post("/admin/toggle-mode")
+@login_required
+def toggle_mode():
+    """Admin-only: flip the global VULNERABLE_MODE flag."""
+    global VULNERABLE_MODE
+    if current_user.role != "admin":
+        abort(403)
+    VULNERABLE_MODE = not VULNERABLE_MODE
+    mode = "VULNERABLE ⚠️" if VULNERABLE_MODE else "SECURE ✅"
+
     return redirect(url_for("admin_dashboard"))
 
 
@@ -739,4 +819,4 @@ def create_admin():
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
-    app.run(host="0.0.0.0", port=5000, debug=False)
+    app.run(host="127.0.0.1", port=8080, debug=False)

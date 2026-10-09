@@ -1755,3 +1755,75 @@ main > * {
         padding: 22px;
     }
 }
+
+/* -- Vulnerable Mode Thin Line -- */
+.vuln-thin-line {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    height: 3px;
+    background: var(--danger);
+    width: 100%;
+}
+
+/* -- Mode Toggle Button -- */
+.mode-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 14px;
+    border-radius: 999px;
+    border: 2px solid;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+.mode-toggle-btn.secure {
+    background: var(--success-soft);
+    color: var(--success);
+    border-color: var(--success);
+}
+.mode-toggle-btn.secure:hover {
+    background: var(--success);
+    color: var(--surface);
+}
+.mode-toggle-btn.vulnerable {
+    background: var(--danger-soft);
+    color: var(--danger);
+    border-color: var(--danger);
+    animation: btn-pulse 2s ease-in-out infinite;
+}
+@keyframes btn-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--danger) 40%, transparent); }
+    50%       { box-shadow: 0 0 0 6px color-mix(in srgb, var(--danger) 0%, transparent); }
+}
+.mode-toggle-btn.vulnerable:hover {
+    background: var(--danger);
+    color: var(--surface);
+}
+.mode-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+.mode-dot.green { background: var(--success); }
+.mode-dot.red   { background: var(--danger); animation: pulse 1s ease-in-out infinite; }
+
+/* -- Mode Badges -- */
+.mode-badge {
+    font-size: 11px;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 999px;
+    margin-left: 4px;
+}
+.mode-badge.vuln-badge {
+    background: var(--danger);
+    color: var(--surface);
+}
+.mode-badge.secure-badge {
+    background: var(--success-soft);
+    color: var(--success);
+}

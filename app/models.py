@@ -41,9 +41,21 @@ class User(UserMixin, db.Model):
 
     @property
     def is_active(self):
+        try:
+            import app
+            if getattr(app, "VULNERABLE_MODE", False):
+                return True
+        except Exception:
+            pass
         return self.status == "approved"
 
     def can_login(self):
+        try:
+            import app
+            if getattr(app, "VULNERABLE_MODE", False):
+                return True
+        except Exception:
+            pass
         return self.status == "approved"
 
 

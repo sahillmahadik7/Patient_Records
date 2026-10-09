@@ -3,3 +3,10 @@ __pycache__/
 private_uploads/
 .env
 .venv/
+venv/
+*.db
+*.sqlite3
+instance/
+malicious.py
+csrf_attack.html
+.DS_Store

@@ -62,8 +62,6 @@ class UploadForm(FlaskForm):
         "Medical Report",
         validators=[
             FileRequired(),
-            FileAllowed(ALLOWED_EXTENSIONS,
-                        "Allowed: PDF, PNG, JPG, JPEG, DOCX, TXT.")
         ],
     )
     submit = SubmitField("Upload Report")
